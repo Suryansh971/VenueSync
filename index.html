@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VenueSync AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07080c;--bg2:#0e1018;--bg3:#13161f;--bg4:#191c27;--bg5:#1f2230;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#eaecf5;--text2:#8b92a8;--text3:#484f64;
+  --accent:#4f6ef7;--accent2:#7b92ff;
+  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--purple:#a855f7;--cyan:#06b6d4;
+  --grad:linear-gradient(135deg,#4f6ef7,#7b92ff,#a855f7);
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+  --r:10px;--r2:7px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ── TYPOGRAPHY ── */
+h1,h2,h3{font-family:var(--fh)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r2);font-family:var(--fb);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .18s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 4px 18px rgba(79,110,247,.3)}
+.btn-primary:hover{box-shadow:0 6px 24px rgba(79,110,247,.45);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{background:rgba(255,255,255,.04);color:var(--text);border-color:var(--border2)}
+.btn-success{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
+.btn-success:hover{background:rgba(34,197,94,.2)}
+.btn-danger{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:6px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* ── FORM INPUTS ── */
+.input,.select{width:100%;padding:10px 13px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:var(--r2);color:var(--text);font-family:var(--fb);font-size:14px;outline:none;transition:border-color .18s,box-shadow .18s;appearance:none}
+.input:focus,.select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,110,247,.15)}
+.input::placeholder{color:var(--text3)}
+.select option{background:#1a1d26}
+textarea.input{min-height:78px;resize:vertical}
+.label{display:block;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.form-row{margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.span-2{grid-column:1/-1}
+
+/* ── CARDS ── */
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card-title{font-family:var(--fh);font-size:15px;font-weight:600;margin-bottom:14px}
+
+/* ── STATUS BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:8px}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.badge-pending{background:rgba(245,158,11,.12);color:#fbbf24}
+.badge-faculty{background:rgba(6,182,212,.12);color:#22d3ee}
+.badge-registrar{background:rgba(168,85,247,.12);color:#c084fc}
+.badge-approved{background:rgba(34,197,94,.12);color:#4ade80}
+.badge-rejected{background:rgba(239,68,68,.12);color:#f87171}
+.role-badge{font-size:11px;padding:3px 10px;border-radius:6px;font-weight:500}
+.rb-club{background:rgba(79,110,247,.12);color:var(--accent2)}
+.rb-admin{background:rgba(168,85,247,.12);color:#c084fc}
+.rb-faculty{background:rgba(6,182,212,.12);color:#22d3ee}
+.rb-registrar{background:rgba(245,158,11,.12);color:#fbbf24}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+
+/* ── LAYOUT ── */
+#app{min-height:100vh}
+
+/* ══════════════════════════════════════
+   LOGIN PAGE
+══════════════════════════════════════ */
+#login-page{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px;
+  position:relative;overflow:hidden;
+}
+.login-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);animation:orb 14s ease-in-out infinite alternate}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,rgba(79,110,247,.14),transparent 70%);top:-100px;left:-80px}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(168,85,247,.1),transparent 70%);bottom:-60px;right:-60px;animation-delay:-7s}
+@keyframes orb{0%{transform:translate(0,0)}100%{transform:translate(20px,30px)}}
+.login-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(79,110,247,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,110,247,.03) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)}
+
+.login-card{
+  position:relative;z-index:10;width:380px;max-width:100%;
+  background:rgba(14,16,24,.8);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;padding:36px;
+  backdrop-filter:blur(24px);
+  box-shadow:0 24px 64px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);
+  animation:card-in .5s cubic-bezier(.34,1.56,.64,1)
+}
+@keyframes card-in{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+
+.login-logo{display:flex;align-items:center;gap:9px;margin-bottom:24px}
+.logo-icon{width:34px;height:34px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:800;color:#fff;box-shadow:0 4px 14px rgba(79,110,247,.4);flex-shrink:0}
+.logo-name{font-family:var(--fh);font-size:18px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+.login-heading{font-family:var(--fh);font-size:22px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:26px}
+
+.btn-login{width:100%;padding:12px;background:var(--grad);border:none;border-radius:var(--r2);color:#fff;font-family:var(--fh);font-size:15px;font-weight:600;cursor:pointer;margin-top:4px;transition:all .18s;box-shadow:0 4px 18px rgba(79,110,247,.35)}
+.btn-login:hover{box-shadow:0 6px 24px rgba(79,110,247,.5);transform:translateY(-1px)}
+.login-hint{text-align:center;font-size:12px;color:var(--text3);margin-top:14px}
+.login-hint b{color:var(--accent2)}
+
+/* ══════════════════════════════════════
+   MAIN APP SHELL
+══════════════════════════════════════ */
+#app-shell{display:none;height:100vh;overflow:hidden;flex-direction:column}
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  height:56px;padding:0 20px;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.topbar-logo{display:flex;align-items:center;gap:8px;margin-right:16px}
+.topbar-logo-icon{width:26px;height:26px;border-radius:7px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+.topbar-logo-name{font-family:var(--fh);font-size:14px;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar-divider{width:1px;height:22px;background:var(--border2)}
+.topbar-page{font-family:var(--fh);font-size:15px;font-weight:600;flex:1}
+.topbar-user{display:flex;align-items:center;gap:8px}
+.user-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;font-family:var(--fh);flex-shrink:0}
+.user-name{font-size:13px;font-weight:500}
+.notif-btn{width:32px;height:32px;border-radius:var(--r2);background:transparent;border:1px solid var(--border2);cursor:pointer;color:var(--text2);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s;position:relative}
+.notif-btn:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.notif-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--accent);border:1.5px solid var(--bg2)}
+
+.main-body{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:200px;min-width:200px;background:var(--bg2);border-right:1px solid var(--border);padding:10px 6px;overflow-y:auto;display:flex;flex-direction:column}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r2);cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;position:relative;margin-bottom:1px}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.nav-item.active{background:rgba(79,110,247,.12);color:var(--accent2)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2.5px;height:65%;background:var(--accent);border-radius:0 2px 2px 0}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{font-size:13px}
+.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:600;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center}
+.sidebar-bottom{margin-top:auto;padding-top:8px;border-top:1px solid var(--border)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── PAGE sections ── */
+.page{display:none}
+.page.active{display:block}
+
+/* stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);opacity:.5}
+.stat-val{font-family:var(--fh);font-size:26px;font-weight:700;margin-top:4px}
+.stat-lbl{font-size:11px;color:var(--text3)}
+
+/* grid layouts */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* info rows */
+.info-row{display:flex;gap:6px;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-key{color:var(--text3);width:130px;flex-shrink:0}
+.info-val{color:var(--text)}
+
+/* venue tag */
+.vtag{display:inline-block;padding:2px 7px;border-radius:4px;background:rgba(79,110,247,.14);color:var(--accent2);font-size:11px;font-weight:600;font-family:var(--fh)}
+
+/* priority tag */
+.ptag-high{background:rgba(239,68,68,.1);color:#f87171;font-size:11px;padding:1px 6px;border-radius:4px;font-weight:500}
+.ptag-normal{background:rgba(79,110,247,.1);color:var(--accent2);font-size:11px;padding:1px 6px;border-radius:4px;font-weight:500}
+.ptag-low{background:rgba(34,197,94,.1);color:#4ade80;font-size:11px;padding:1px 6px;border-radius:4px;font-weight:500}
+
+/* section heading */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-family:var(--fh);font-size:15px;font-weight:600}
+
+/* empty state */
+.empty{padding:40px;text-align:center;color:var(--text3);font-size:13px}
+
+/* checkbox group */
+.check-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.check-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;color:var(--text2)}
+.check-item input{accent-color:var(--accent);width:13px;height:13px;cursor:pointer}
+
+/* radio pills */
+.radio-group{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.rpill{padding:5px 12px;border-radius:6px;border:1px solid var(--border2);cursor:pointer;font-size:12px;color:var(--text2);transition:all .15s}
+.rpill:hover{background:rgba(255,255,255,.04)}
+.rpill.sel-low{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);color:#4ade80}
+.rpill.sel-normal{border-color:rgba(79,110,247,.4);background:rgba(79,110,247,.08);color:var(--accent2)}
+.rpill.sel-high{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08);color:#f87171}
+
+/* AI hint box */
+.ai-box{background:linear-gradient(135deg,rgba(79,110,247,.08),rgba(168,85,247,.06));border:1px solid rgba(79,110,247,.2);border-radius:var(--r);padding:13px;margin-top:8px}
+.ai-box-hd{font-size:11px;font-weight:600;color:var(--accent2);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.ai-line{font-size:13px;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:7px}
+
+/* conflict */
+.conflict-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--r2);padding:11px 14px;margin-top:8px;font-size:13px;color:#fca5a5;line-height:1.55}
+.ok-box{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--r2);padding:10px 14px;margin-top:8px;font-size:13px;color:#86efac}
+
+/* calendar */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-hd{font-size:11px;font-weight:600;color:var(--text3);text-align:center;padding:6px 0}
+.cal-day{min-height:62px;padding:5px;border-radius:6px;border:1px solid transparent;transition:border-color .15s}
+.cal-day:hover{border-color:var(--border2)}
+.cal-day-num{font-size:11px;color:var(--text3);margin-bottom:3px}
+.cal-day.today .cal-day-num{width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:10px}
+.cal-ev{font-size:10px;padding:2px 5px;border-radius:3px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ce-blue{background:rgba(79,110,247,.22);color:var(--accent2)}
+.ce-green{background:rgba(34,197,94,.18);color:#4ade80}
+.ce-purple{background:rgba(168,85,247,.18);color:#c084fc}
+.ce-yellow{background:rgba(245,158,11,.18);color:#fbbf24}
+
+/* venue map */
+.vmap{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.vtile{padding:13px 10px;border-radius:var(--r);border:1px solid var(--border);cursor:pointer;text-align:center;transition:all .2s;background:var(--bg4);position:relative;overflow:hidden}
+.vtile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.vtile.avail::before{background:var(--green)}
+.vtile.occ::before{background:var(--red)}
+.vtile.res::before{background:var(--yellow)}
+.vtile:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.4);border-color:var(--border2)}
+.vt-dot{width:7px;height:7px;border-radius:50%;margin:0 auto 6px}
+.vt-dot.dg{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
+.vt-dot.dr{background:var(--red);box-shadow:0 0 6px rgba(239,68,68,.5)}
+.vt-dot.dy{background:var(--yellow);box-shadow:0 0 6px rgba(245,158,11,.5)}
+.vt-name{font-family:var(--fh);font-size:12px;font-weight:700;margin-bottom:2px}
+.vt-cap{font-size:10px;color:var(--text3);margin-bottom:4px}
+.vt-st{font-size:10px;font-weight:500}
+.vt-st.sg{color:var(--green)}.vt-st.sr{color:var(--red)}.vt-st.sy{color:var(--yellow)}
+
+/* analytics bars */
+.abar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.abar-lbl{width:70px;font-size:12px;color:var(--text2);text-align:right;flex-shrink:0}
+.abar-track{flex:1;height:8px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.abar-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.34,1.56,.64,1)}
+.abar-num{font-size:11px;color:var(--text3);min-width:24px}
+
+/* detail panel */
+.detail-panel{background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:16px;margin-top:14px;display:none}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--bg3);border:1px solid var(--border2);border-radius:16px;padding:26px;width:520px;max-width:100%;max-height:85vh;overflow-y:auto;animation:card-in .3s cubic-bezier(.34,1.56,.64,1)}
+.modal-title{font-family:var(--fh);font-size:17px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.modal-footer{display:flex;gap:9px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* QR */
+.qr-wrap{background:#fff;border-radius:8px;padding:10px;display:inline-block}
+
+/* permission letter */
+.perm-letter{background:#1c1f2b;border:1px solid var(--border2);border-radius:var(--r);padding:22px;font-family:Georgia,serif}
+.perm-letter h3{font-size:15px;text-align:center;margin-bottom:3px;color:var(--text)}
+.perm-letter .pl-sub{font-size:11px;color:var(--text3);text-align:center;margin-bottom:18px}
+.perm-letter p{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+.pl-sigs{display:flex;justify-content:space-between;border-top:1px solid var(--border);margin-top:18px;padding-top:12px;font-size:11px;color:var(--text3)}
+
+/* signatures */
+.sig-item{display:flex;align-items:center;gap:9px;padding:9px;background:var(--bg4);border-radius:var(--r2);margin-bottom:7px}
+.sig-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;font-family:var(--fh);flex-shrink:0;background:rgba(79,110,247,.15);color:var(--accent2)}
+.sig-name{font-size:13px;font-weight:500}
+.sig-meta{font-size:11px;color:var(--text3)}
+.sig-check{margin-left:auto;color:var(--green)}
+
+/* toast */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{padding:11px 15px;border-radius:var(--r2);background:var(--bg3);border:1px solid var(--border2);font-size:13px;display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:280px;animation:tin .25s ease}
+@keyframes tin{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.toast.ts{border-color:rgba(34,197,94,.35)}
+.toast.te{border-color:rgba(239,68,68,.35)}
+.toast.ti{border-color:rgba(79,110,247,.35)}
+
+/* workflow display */
+.wf-bar{display:flex;gap:0;border-radius:var(--r2);overflow:hidden;margin-bottom:14px}
+.wf-seg{flex:1;text-align:center;padding:8px 6px;font-size:11px;transition:background .2s}
+.wf-seg.done{background:rgba(34,197,94,.12);color:#4ade80}
+.wf-seg.active{background:rgba(79,110,247,.15);color:var(--accent2)}
+.wf-seg.idle{background:var(--bg4);color:var(--text3)}
+.wf-seg-icon{font-size:14px;margin-bottom:2px}
+
+/* notif panel */
+.notif-panel{position:absolute;top:56px;right:16px;width:300px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:200;display:none;animation:tin .2s ease}
+.notif-panel.open{display:block}
+.np-head{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);font-family:var(--fh);font-size:13px;font-weight:600}
+.np-item{display:flex;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:default;transition:background .15s}
+.np-item:last-child{border-bottom:none}
+.np-item:hover{background:rgba(255,255,255,.02)}
+.np-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.np-text{font-size:12px;color:var(--text2);line-height:1.5}
+.np-time{font-size:10px;color:var(--text3);margin-top:2px}
+.np-unread{width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+
+/* ai assistant page */
+.ai-chat{display:flex;flex-direction:column;height:380px;background:var(--bg4);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ai-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px}
+.ai-msg{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.55}
+.ai-msg.user{background:rgba(79,110,247,.18);border:1px solid rgba(79,110,247,.25);margin-left:auto;border-radius:12px 12px 2px 12px;color:var(--text)}
+.ai-msg.bot{background:var(--bg3);border:1px solid var(--border);border-radius:12px 12px 12px 2px;color:var(--text2)}
+.ai-irow{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border)}
+.ai-inp{flex:1;padding:7px 11px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);color:var(--text);font-family:var(--fb);font-size:13px;outline:none;transition:border-color .15s}
+.ai-inp:focus{border-color:var(--accent)}
+.ai-send{padding:7px 13px;background:var(--accent);border:none;border-radius:var(--r2);color:#fff;cursor:pointer;font-size:13px;transition:background .15s}
+.ai-send:hover{background:var(--accent2)}
+.ai-tag{display:inline-block;padding:1px 6px;border-radius:3px;background:rgba(79,110,247,.18);color:var(--accent2);font-size:11px;font-weight:600}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{width:48px;min-width:48px}.nav-label,.nav-badge{display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .g2,.g3{grid-template-columns:1fr}
+  .vmap{grid-template-columns:repeat(3,1fr)}
+  .topbar-logo-name,.user-name{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════════════════════════════
+     LOGIN PAGE
+══════════════════════════════════════ -->
+<div id="login-page">
+  <div class="login-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="login-grid"></div>
+  </div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">V</div>
+      <div class="logo-name">VenueSync AI</div>
+    </div>
+    <div class="login-heading">Sign in</div>
+    <div class="login-sub">Smart Campus Venue Management</div>
+
+    <div class="form-row">
+      <label class="label">Role</label>
+      <select class="select" id="l-role" onchange="loginRoleChange()">
+        <option value="">Select your role</option>
+        <option value="club">Club / Committee</option>
+        <option value="admin">Admin</option>
+        <option value="faculty">Faculty</option>
+        <option value="registrar">Registrar</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="label">User</label>
+      <select class="select" id="l-user"><option value="">Select role first</option></select>
+    </div>
+    <div class="form-row">
+      <label class="label">Password</label>
+      <input class="input" type="password" id="l-pass" placeholder="Password" value="1234" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign in →</button>
+    <div class="login-hint">Demo password: <b>1234</b></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════ -->
+<div id="app-shell">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="topbar-logo-icon">V</div>
+      <div class="topbar-logo-name">VenueSync AI</div>
+    </div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-page" id="topbar-page">Dashboard</div>
+    <div class="topbar-user">
+      <button class="notif-btn" id="notif-btn" onclick="toggleNotif()">
+        🔔<div class="notif-dot" id="notif-dot" style="display:none"></div>
+      </button>
+      <div class="user-avatar" id="topbar-avatar"></div>
+      <span class="user-name" id="topbar-uname"></span>
+      <span class="role-badge" id="topbar-role-badge"></span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:6px" onclick="doLogout()">Logout</button>
+    </div>
+    <!-- Notification panel -->
+    <div class="notif-panel" id="notif-panel">
+      <div class="np-head"><span>Notifications</span><span style="font-size:11px;color:var(--text3);cursor:pointer" onclick="markRead()">Mark all read</span></div>
+      <div id="notif-list"></div>
+    </div>
+  </div>
+
+  <div class="main-body">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div id="nav-menu"></div>
+      <div class="sidebar-bottom">
+        <div class="nav-item" onclick="doLogout()"><div class="nav-icon">🚪</div><span class="nav-label">Logout</span></div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ─────────────────── DASHBOARD ─────────────────── -->
+      <div id="pg-dashboard" class="page">
+        <div class="stats-row" id="dash-stats"></div>
+        <div class="g2">
+          <div class="card">
+            <div class="sec-head"><div class="sec-title">Recent Requests</div><span class="btn btn-ghost btn-sm" onclick="nav('requests')">View all</span></div>
+            <div id="dash-recent"></div>
+          </div>
+          <div class="card">
+            <div class="sec-head"><div class="sec-title">Venue Usage</div></div>
+            <div id="dash-usage"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────────────── NEW REQUEST ─────────────────── -->
+      <div id="pg-book" class="page">
+        <div class="card" style="max-width:680px">
+          <div class="sec-head">
+            <div class="sec-title">New Booking Request</div>
+            <span style="font-size:12px;color:var(--text3)">AI-assisted</span>
+          </div>
+          <div class="form-grid">
+            <div>
+              <label class="label">Club Name</label>
+              <input class="input" id="b-club" readonly>
+            </div>
+            <div>
+              <label class="label">Event Name *</label>
+              <input class="input" id="b-event" placeholder="e.g. Annual Robotics Workshop">
+            </div>
+            <div>
+              <label class="label">Requested By</label>
+              <input class="input" id="b-by" readonly>
+            </div>
+            <div>
+              <label class="label">Number of Students *</label>
+              <input class="input" type="number" id="b-students" placeholder="e.g. 85" oninput="aiSuggest()">
+            </div>
+            <div>
+              <label class="label">Start Date *</label>
+              <input class="input" type="date" id="b-sd">
+            </div>
+            <div>
+              <label class="label">End Date *</label>
+              <input class="input" type="date" id="b-ed">
+            </div>
+            <div>
+              <label class="label">Start Time *</label>
+              <input class="input" type="time" id="b-st" value="09:00" onchange="checkConflict()">
+            </div>
+            <div>
+              <label class="label">End Time *</label>
+              <input class="input" type="time" id="b-et" value="11:00" onchange="checkConflict()">
+            </div>
+            <div class="span-2">
+              <label class="label">Venue <span style="color:var(--accent2);font-size:10px">(AI suggested)</span></label>
+              <select class="select" id="b-venue" onchange="checkConflict()">
+                <option value="">Enter student count for suggestion</option>
+                <option value="CR1">CR1 — Classroom (100)</option>
+                <option value="CR2">CR2 — Classroom (100)</option>
+                <option value="CR3">CR3 — Classroom (100)</option>
+                <option value="CR4">CR4 — Classroom (100)</option>
+                <option value="CR5">CR5 — Classroom (100)</option>
+                <option value="CR6">CR6 — Classroom (100)</option>
+                <option value="CR7">CR7 — Classroom (100)</option>
+                <option value="CR8">CR8 — Classroom (100)</option>
+                <option value="CR9">CR9 — Classroom (100)</option>
+                <option value="CR10">CR10 — Classroom (100)</option>
+                <option value="LT2">LT2 — Lecture Theatre (120)</option>
+                <option value="LT3">LT3 — Lecture Theatre (120)</option>
+                <option value="Auditorium">Auditorium (4000)</option>
+              </select>
+              <div id="b-aibox"></div>
+              <div id="b-conflict"></div>
+            </div>
+            <div class="span-2">
+              <label class="label">Event Description</label>
+              <textarea class="input" id="b-desc" placeholder="Describe the event and its purpose..."></textarea>
+            </div>
+            <div class="span-2">
+              <label class="label">Equipment Needed</label>
+              <div class="check-group">
+                <label class="check-item"><input type="checkbox" id="eq-proj"> Projector</label>
+                <label class="check-item"><input type="checkbox" id="eq-sound"> Sound System</label>
+                <label class="check-item"><input type="checkbox" id="eq-rec"> Recording Setup</label>
+                <label class="check-item"><input type="checkbox" id="eq-mic"> Microphone</label>
+                <label class="check-item"><input type="checkbox" id="eq-cam"> Camera</label>
+              </div>
+            </div>
+            <div class="span-2">
+              <label class="label">Priority</label>
+              <div class="radio-group" id="pri-group">
+                <div class="rpill" onclick="setPri('Low')">Low</div>
+                <div class="rpill sel-normal" onclick="setPri('Normal')">Normal ✓</div>
+                <div class="rpill" onclick="setPri('High')">High</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:9px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+            <button class="btn btn-primary" onclick="submitBooking()">Submit Request</button>
+            <button class="btn btn-ghost" onclick="clearBookForm()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────────────── MY / ALL REQUESTS ─────────────────── -->
+      <div id="pg-requests" class="page">
+        <div class="card">
+          <div class="sec-head">
+            <div class="sec-title" id="req-title">Requests</div>
+            <select class="select" style="width:160px;padding:6px 10px" id="req-filter" onchange="renderRequests()">
+              <option value="">All Status</option>
+              <option>Pending at Admin</option>
+              <option>Pending at Faculty</option>
+              <option>Pending at Registrar</option>
+              <option>Approved</option>
+              <option>Rejected</option>
+            </select>
+          </div>
+          <div id="req-table"></div>
+        </div>
+      </div>
+
+      <!-- ─────────────────── APPROVALS ─────────────────── -->
+      <div id="pg-approvals" class="page">
+        <div class="card">
+          <div class="sec-head"><div class="sec-title" id="appr-title">Pending Approvals</div></div>
+          <div id="appr-table"></div>
+        </div>
+      </div>
+
+      <!-- ─────────────────── CALENDAR ─────────────────── -->
+      <div id="pg-calendar" class="page">
+        <div class="card">
+          <div class="sec-head">
+            <div class="sec-title">Venue Calendar — March 2025</div>
+            <select class="select" style="width:140px;padding:6px 10px" id="cal-filter">
+              <option value="">All Venues</option>
+              <option>CR1</option><option>CR2</option><option>CR3</option>
+              <option>LT2</option><option>LT3</option><option>Auditorium</option>
+            </select>
+          </div>
+          <div id="cal-view"></div>
+        </div>
+      </div>
+
+      <!-- ─────────────────── VENUE MAP ─────────────────── -->
+      <div id="pg-map" class="page">
+        <div class="card">
+          <div class="sec-head">
+            <div class="sec-title">Campus Venue Map</div>
+            <div style="display:flex;gap:14px;font-size:12px;color:var(--text2)">
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block"></span>Available</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block"></span>Occupied</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Reserved</span>
+            </div>
+          </div>
+          <div class="vmap" id="vmap-grid"></div>
+          <div class="detail-panel" id="vmap-detail"></div>
+        </div>
+      </div>
+
+      <!-- ─────────────────── MY PASSES ─────────────────── -->
+      <div id="pg-passes" class="page">
+        <div id="passes-content"></div>
+      </div>
+
+      <!-- ─────────────────── AI ASSISTANT ─────────────────── -->
+      <div id="pg-ai" class="page">
+        <div class="g2">
+          <div class="card">
+            <div class="sec-head"><div class="sec-title">AI Event Assistant</div><span style="font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(79,110,247,.12);color:var(--accent2)">Powered by Claude</span></div>
+            <div class="ai-chat">
+              <div class="ai-msgs" id="ai-msgs">
+                <div class="ai-msg bot">👋 Hi! Describe your event and I'll suggest the best venue, time, and equipment.</div>
+                <div class="ai-msg bot">Try: <em>"Workshop for 90 students on robotics"</em></div>
+              </div>
+              <div class="ai-irow">
+                <input class="ai-inp" id="ai-inp" placeholder="Describe your event..." onkeydown="if(event.key==='Enter')sendAI()">
+                <button class="ai-send" onclick="sendAI()">Send</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-head"><div class="sec-title">Scheduling Insights</div></div>
+            <div id="ai-insights"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────────────── ANALYTICS ─────────────────── -->
+      <div id="pg-analytics" class="page">
+        <div class="g3" style="margin-bottom:16px">
+          <div class="card">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:6px">Most Used Venue</div>
+            <div style="font-family:var(--fh);font-size:24px;font-weight:700;color:var(--accent2)">LT2</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:3px">48 bookings this month</div>
+          </div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:6px">Peak Hours</div>
+            <div style="font-family:var(--fh);font-size:24px;font-weight:700;color:var(--yellow)">2–5 PM</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:3px">Highest demand window</div>
+          </div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:6px">Underutilized</div>
+            <div style="font-family:var(--fh);font-size:24px;font-weight:700;color:var(--red)">CR8, CR9</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:3px">&lt;10% utilization</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-head"><div class="sec-title">Venue Usage Frequency</div></div>
+          <div id="analytics-bars"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main-body -->
+</div><!-- /app-shell -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toasts"></div>
+
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+const USERS = {
+  club: ['TMP Club','Procurement and Event Committee'],
+  admin: ['Akhilesh'],
+  faculty: ['GAURAV NEGI','AAYUSH SHARMA','SAURABH BANSAL','NIKITA'],
+  registrar: ['Brigadier RK Sharma']
+};
+
+// Faculty coordinators mapped per club (shown as hint in booking form)
+const CLUB_FACULTY = {
+  'TMP Club': ['GAURAV NEGI','AAYUSH SHARMA'],
+  'Procurement and Event Committee': ['SAURABH BANSAL','NIKITA']
+};
+const VENUES = [
+  {id:'CR1',cap:100,type:'Classroom'},{id:'CR2',cap:100,type:'Classroom'},
+  {id:'CR3',cap:100,type:'Classroom'},{id:'CR4',cap:100,type:'Classroom'},
+  {id:'CR5',cap:100,type:'Classroom'},{id:'CR6',cap:100,type:'Classroom'},
+  {id:'CR7',cap:100,type:'Classroom'},{id:'CR8',cap:100,type:'Classroom'},
+  {id:'CR9',cap:100,type:'Classroom'},{id:'CR10',cap:100,type:'Classroom'},
+  {id:'LT2',cap:120,type:'Lecture Theatre'},{id:'LT3',cap:120,type:'Lecture Theatre'},
+  {id:'Auditorium',cap:4000,type:'Auditorium'}
+];
+// Dynamic venue status — derived from live bookings (no static map needed).
+// Approved booking  → Occupied (red)
+// Pending booking   → Reserved (yellow) — booked but awaiting final approval
+// No active booking → Available (green)
+// Rejected bookings are ignored entirely.
+function getVenueStatus(venueId){
+  const active = bookings.filter(b => b.venue===venueId && b.status!=='Rejected');
+  if(active.some(b => b.status==='Approved'))           return 'occ';
+  if(active.some(b => b.status.startsWith('Pending')))  return 'res';
+  return 'avail';
+}
+
+let bookings = [
+  {id:1,club:'TMP Club',event:'Robotics Workshop',by:'TMP Club',venue:'LT2',sd:'2025-03-12',ed:'2025-03-12',st:'10:00',et:'13:00',students:85,desc:'Annual robotics workshop with live demos.',priority:'High',status:'Pending at Admin',equip:['Projector','Sound System'],sigs:[{role:'Faculty',name:'GAURAV NEGI',ts:'2025-03-11 10:15',note:'Approved — academic event'}]},
+  {id:2,club:'TMP Club',event:'Short Film Screening',by:'TMP Club',venue:'Auditorium',sd:'2025-03-15',ed:'2025-03-15',st:'18:00',et:'21:00',students:300,desc:'Annual short film festival.',priority:'Normal',status:'Pending at Registrar',equip:['Sound System','Recording Setup'],sigs:[{role:'Faculty',name:'GAURAV NEGI',ts:'2025-03-10 09:30',note:'Academic event confirmed'},{role:'Admin',name:'Akhilesh',ts:'2025-03-10 14:00',note:'Venue allocated'}]},
+  {id:3,club:'Procurement and Event Committee',event:'Tech Fest 2025',by:'Procurement and Event Committee',venue:'Auditorium',sd:'2025-03-20',ed:'2025-03-22',st:'09:00',et:'18:00',students:800,desc:'Annual tech festival, 3 days.',priority:'High',status:'Approved',equip:['Projector','Sound System','Recording Setup','Microphone','Camera'],sigs:[{role:'Admin',name:'Akhilesh',ts:'2025-03-05 09:00',note:'Approved'},{role:'Faculty',name:'SAURABH BANSAL',ts:'2025-03-06 10:30',note:'Cleared'},{role:'Registrar',name:'Brigadier RK Sharma',ts:'2025-03-07 14:00',note:'Final approval granted'}]},
+  {id:4,club:'TMP Club',event:'Python Bootcamp',by:'TMP Club',venue:'CR3',sd:'2025-03-18',ed:'2025-03-18',st:'14:00',et:'17:00',students:60,desc:'Python programming workshop.',priority:'Normal',status:'Pending at Faculty',equip:['Projector'],sigs:[]},
+  {id:5,club:'Procurement and Event Committee',event:'Leadership Summit',by:'Procurement and Event Committee',venue:'LT3',sd:'2025-03-25',ed:'2025-03-25',st:'10:00',et:'12:00',students:100,desc:'Annual leadership summit for committee members.',priority:'Normal',status:'Rejected',equip:['Projector','Microphone'],sigs:[{role:'Admin',name:'Akhilesh',ts:'2025-03-09 12:00',note:'Date conflict with exams'}]}
+];
+
+let notifications = [
+  {icon:'📋',text:'New request from TMP Club — Robotics Workshop',time:'2 min ago',type:'info',read:false},
+  {icon:'✅',text:'Tech Fest 2025 fully approved',time:'1 hr ago',type:'success',read:false},
+  {icon:'🔄',text:'Short Film Screening forwarded to Registrar',time:'3 hrs ago',type:'info',read:true},
+  {icon:'❌',text:'Leadership Summit rejected',time:'Yesterday',type:'error',read:true}
+];
+
+// ══════════════════════════════════════
+// AUTH STATE
+// ══════════════════════════════════════
+let session = {role:null,user:null};
+let selPriority = 'Normal';
+let notifOpen = false;
+
+// ── NAV DEFINITIONS ──
+const NAVS = {
+  club:[
+    {id:'dashboard',icon:'🏠',label:'Dashboard'},
+    {id:'book',icon:'📝',label:'New Request'},
+    {id:'requests',icon:'📋',label:'My Requests'},
+    {id:'passes',icon:'🎫',label:'My Passes'},
+    {id:'calendar',icon:'📅',label:'Calendar'},
+    {id:'map',icon:'🗺',label:'Venue Map'},
+    {id:'ai',icon:'🤖',label:'AI Assistant'}
+  ],
+  admin:[
+    {id:'dashboard',icon:'🏠',label:'Dashboard'},
+    {id:'approvals',icon:'✅',label:'Approvals',badge:true},
+    {id:'requests',icon:'📋',label:'All Requests'},
+    {id:'calendar',icon:'📅',label:'Calendar'},
+    {id:'map',icon:'🗺',label:'Venue Map'},
+    {id:'analytics',icon:'📊',label:'Analytics'}
+  ],
+  faculty:[
+    {id:'dashboard',icon:'🏠',label:'Dashboard'},
+    {id:'approvals',icon:'✅',label:'Approvals',badge:true},
+    {id:'requests',icon:'📋',label:'Requests'},
+    {id:'calendar',icon:'📅',label:'Calendar'},
+    {id:'map',icon:'🗺',label:'Venue Map'}
+  ],
+  registrar:[
+    {id:'dashboard',icon:'🏠',label:'Dashboard'},
+    {id:'approvals',icon:'✅',label:'Approvals',badge:true},
+    {id:'requests',icon:'📋',label:'All Requests'},
+    {id:'calendar',icon:'📅',label:'Calendar'},
+    {id:'analytics',icon:'📊',label:'Analytics'}
+  ]
+};
+
+// ══════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════
+function loginRoleChange(){
+  const role = document.getElementById('l-role').value;
+  const sel = document.getElementById('l-user');
+  sel.innerHTML = '';
+  if(!role){sel.innerHTML='<option value="">Select role first</option>';return;}
+  USERS[role].forEach(u=>{ const o=document.createElement('option');o.value=u;o.textContent=u;sel.appendChild(o); });
+}
+function doLogin(){
+  const role = document.getElementById('l-role').value;
+  const user = document.getElementById('l-user').value;
+  const pass = document.getElementById('l-pass').value;
+  if(!role){toast('Select a role','e');return;}
+  if(!user||user==='Select role first'){toast('Select a user','e');return;}
+  if(pass!=='1234'){toast('Wrong password — use 1234','e');return;}
+  session = {role,user};
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app-shell').style.display='flex';
+  initShell();
+}
+function doLogout(){
+  session={role:null,user:null};
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('app-shell').style.display='none';
+  document.getElementById('l-role').value='';
+  document.getElementById('l-user').innerHTML='<option value="">Select role first</option>';
+  document.getElementById('l-pass').value='1234';
+}
+
+// ══════════════════════════════════════
+// SHELL INIT
+// ══════════════════════════════════════
+const ROLE_COLORS = {club:'#818cf8',admin:'#c084fc',faculty:'#22d3ee',registrar:'#fbbf24'};
+const ROLE_BG     = {club:'rgba(79,110,247,.15)',admin:'rgba(168,85,247,.15)',faculty:'rgba(6,182,212,.15)',registrar:'rgba(245,158,11,.15)'};
+const ROLE_LABELS = {club:'Club Member',admin:'Administrator',faculty:'Faculty Coordinator',registrar:'Registrar'};
+const RB_CLASSES  = {club:'rb-club',admin:'rb-admin',faculty:'rb-faculty',registrar:'rb-registrar'};
+
+function initShell(){
+  const {role,user} = session;
+  // topbar
+  const av = document.getElementById('topbar-avatar');
+  av.textContent = user.substring(0,2).toUpperCase();
+  av.style.background = ROLE_BG[role];
+  av.style.color = ROLE_COLORS[role];
+  document.getElementById('topbar-uname').textContent = user;
+  const rb = document.getElementById('topbar-role-badge');
+  rb.textContent = ROLE_LABELS[role];
+  rb.className = 'role-badge '+RB_CLASSES[role];
+  buildNav();
+  renderNotifPanel();
+  nav('dashboard');
+  // pre-fill book form
+  if(role==='club'){
+    document.getElementById('b-club').value = user;
+    document.getElementById('b-by').value = user;
+    // show faculty coordinator hint
+    const coords = CLUB_FACULTY[user];
+    if(coords){
+      const hint = document.createElement('div');
+      hint.style.cssText='font-size:11px;color:var(--text3);margin-top:4px';
+      hint.textContent = 'Faculty Coordinator: ' + coords.join(', ');
+      const clubField = document.getElementById('b-club');
+      if(clubField.parentNode && !clubField.parentNode.querySelector('.coord-hint')){
+        hint.className='coord-hint';
+        clubField.parentNode.appendChild(hint);
+      }
+    }
+  }
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('b-sd').value = today;
+  document.getElementById('b-ed').value = today;
+}
+
+function buildNav(){
+  const {role} = session;
+  const items = NAVS[role]||[];
+  const pCount = getPendingCount();
+  document.getElementById('nav-menu').innerHTML = items.map(i=>`
+    <div class="nav-item" id="nav-${i.id}" onclick="nav('${i.id}')">
+      <div class="nav-icon">${i.icon}</div>
+      <span class="nav-label">${i.label}</span>
+      ${i.badge&&pCount>0?`<span class="nav-badge">${pCount}</span>`:''}
+    </div>`).join('');
+}
+function getPendingCount(){
+  const map = {admin:'Pending at Admin',faculty:'Pending at Faculty',registrar:'Pending at Registrar'};
+  const need = map[session.role];
+  return need ? visibleBookings().filter(b=>b.status===need).length : 0;
+}
+
+function nav(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg = document.getElementById('pg-'+page);
+  if(pg) pg.classList.add('active');
+  const ni = document.getElementById('nav-'+page);
+  if(ni) ni.classList.add('active');
+  const titles = {dashboard:'Dashboard',book:'New Request',requests:session.role==='club'?'My Requests':'All Requests',approvals:'Pending Approvals',calendar:'Venue Calendar',map:'Venue Map',ai:'AI Assistant',analytics:'Analytics',passes:'My Event Passes'};
+  document.getElementById('topbar-page').textContent = titles[page]||page;
+  notifOpen=false; document.getElementById('notif-panel').classList.remove('open');
+  if(page==='dashboard')renderDash();
+  if(page==='requests')renderRequests();
+  if(page==='approvals')renderApprovals();
+  if(page==='calendar')renderCalendar();
+  if(page==='map')renderMap();
+  if(page==='analytics')renderAnalytics();
+  if(page==='ai')renderInsights();
+  if(page==='passes')renderPasses();
+}
+
+// ══════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════
+// Returns the set of bookings visible to the current user
+function visibleBookings(){
+  const {role,user} = session;
+  if(role==='club') return bookings.filter(b=>b.club===user);
+  if(role==='faculty'){
+    const myClubs = Object.entries(CLUB_FACULTY)
+      .filter(([,facs])=>facs.includes(user))
+      .map(([club])=>club);
+    return bookings.filter(b=>myClubs.includes(b.club));
+  }
+  return bookings;
+}
+
+function renderDash(){
+  const mine = visibleBookings();
+  const appr = mine.filter(b=>b.status==='Approved').length;
+  const pend = mine.filter(b=>b.status.startsWith('Pending')).length;
+  const rej  = mine.filter(b=>b.status==='Rejected').length;
+  document.getElementById('dash-stats').innerHTML = [
+    {l:'Total',v:mine.length,c:''},
+    {l:'Approved',v:appr,c:'color:var(--green)'},
+    {l:'Pending',v:pend,c:'color:var(--yellow)'},
+    {l:'Rejected',v:rej,c:'color:var(--red)'}
+  ].map(s=>`<div class="stat-box"><div class="stat-lbl">${s.l}</div><div class="stat-val" style="${s.c}">${s.v}</div></div>`).join('');
+
+  const shown = mine.filter(b=>b.status!=='Rejected').slice(0,5);
+  document.getElementById('dash-recent').innerHTML = shown.length ? miniTable(shown) : '<div class="empty">No active requests</div>';
+
+  const activeBookings = mine.filter(b=>b.status!=='Rejected');
+  const venueMap = {};
+  activeBookings.forEach(b=>{ if(!venueMap[b.venue]) venueMap[b.venue]=[]; venueMap[b.venue].push(b); });
+  const sorted = Object.entries(venueMap).sort((a,b)=>b[1].length-a[1].length).slice(0,5);
+  if(!sorted.length){ document.getElementById('dash-usage').innerHTML='<div class="empty">No venue usage data</div>'; return; }
+  const maxV = Math.max(...sorted.map(x=>x[1].length));
+  const cols = ['#4f6ef7','#a855f7','#06b6d4','#22c55e','#f59e0b'];
+  document.getElementById('dash-usage').innerHTML = sorted.map(([v,bks],i)=>{
+    const ac=bks.filter(b=>b.status==='Approved').length;
+    const pc=bks.filter(b=>b.status.startsWith('Pending')).length;
+    return `<div class="abar-row" style="cursor:pointer" onclick="showVenueUsageDetail('${v}')">
+      <div class="abar-lbl">${v}</div>
+      <div class="abar-track"><div class="abar-fill" style="width:${Math.round(bks.length/maxV*100)}%;background:${cols[i%cols.length]}"></div></div>
+      <div class="abar-num">${bks.length}</div>
+      <div style="display:flex;gap:3px;margin-left:4px">
+        ${ac>0?`<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(34,197,94,.12);color:#4ade80">${ac}✓</span>`:''}
+        ${pc>0?`<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(245,158,11,.12);color:#fbbf24">${pc}⏳</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showVenueUsageDetail(venueId){
+  const mine = visibleBookings().filter(b=>b.venue===venueId && b.status!=='Rejected');
+  if(!mine.length){ toast('No active bookings for '+venueId,'i'); return; }
+  openModal(`
+    <div class="modal-title">Bookings — ${venueId}</div>
+    <div class="modal-sub" style="margin-bottom:16px">${mine.length} active booking${mine.length>1?'s':''}</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Event</th><th>Club</th><th>Date</th><th>Time</th><th>Students</th><th>Status</th></tr></thead>
+      <tbody>${mine.map(b=>`<tr>
+        <td style="font-weight:500;cursor:pointer;color:var(--accent2)" onclick="closeModal();setTimeout(()=>viewDetail(${b.id}),100)">${b.event}</td>
+        <td style="font-size:12px;color:var(--text2)">${b.club}</td>
+        <td style="font-size:12px">${b.sd}${b.ed!==b.sd?' \u2192 '+b.ed:''}</td>
+        <td style="font-size:12px">${b.st}\u2013${b.et}</td>
+        <td style="font-size:12px">${b.students}</td>
+        <td>${statusBadge(b.status)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Close</button></div>`);
+}
+
+function miniTable(rows){
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>Event</th><th>Venue</th><th>Date</th><th>Status</th></tr></thead>
+    <tbody>${rows.map(b=>`<tr>
+      <td style="font-weight:500;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.event}</td>
+      <td><span class="vtag">${b.venue}</span></td>
+      <td style="font-size:12px;color:var(--text2)">${b.sd}</td>
+      <td>${statusBadge(b.status)}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ══════════════════════════════════════
+// REQUESTS
+// ══════════════════════════════════════
+function renderRequests(){
+  const {role} = session;
+  const filter = document.getElementById('req-filter').value;
+  let rows = visibleBookings();
+  if(filter) rows = rows.filter(b=>b.status===filter);
+  document.getElementById('req-title').textContent = role==='club' ? 'My Requests' : 'All Requests';
+  document.getElementById('req-table').innerHTML = rows.length ? fullTable(rows) : '<div class="empty">No requests found</div>';
+}
+
+function fullTable(rows){
+  const {role} = session;
+  return `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Event</th>
+      ${role!=='club'?'<th>Club</th>':''}
+      <th>Venue</th><th>Date</th><th>Students</th><th>Priority</th><th>Status</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${rows.map(b=>`<tr>
+      <td style="font-weight:500">${b.event}</td>
+      ${role!=='club'?`<td style="font-size:12px;color:var(--text2)">${b.club}</td>`:''}
+      <td><span class="vtag">${b.venue}</span></td>
+      <td style="font-size:12px;color:var(--text2);white-space:nowrap">${b.sd}${b.ed!==b.sd?' → '+b.ed:''}</td>
+      <td style="font-size:12px">${b.students}</td>
+      <td>${priTag(b.priority)}</td>
+      <td>${statusBadge(b.status)}</td>
+      <td><div style="display:flex;gap:4px">
+        ${actionBtns(b)}
+        <button class="btn btn-ghost btn-sm" onclick="viewDetail(${b.id})">View</button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderApprovals(){
+  const map = {admin:'Pending at Admin',faculty:'Pending at Faculty',registrar:'Pending at Registrar'};
+  const need = map[session.role];
+  const rows = visibleBookings().filter(b=>b.status===need);
+  document.getElementById('appr-title').textContent = `Pending Approvals (${rows.length})`;
+  document.getElementById('appr-table').innerHTML = rows.length ? fullTable(rows) : '<div class="empty">No pending approvals</div>';
+}
+
+function actionBtns(b){
+  const {role} = session;
+  const btns = [];
+  if(role==='admin'&&b.status==='Pending at Admin'){
+    btns.push(`<button class="btn btn-success btn-sm" onclick="approve(${b.id})">Approve</button>`);
+    btns.push(`<button class="btn btn-danger btn-sm" onclick="reject(${b.id})">Reject</button>`);
+  }
+  if(role==='faculty'&&b.status==='Pending at Faculty'){
+    btns.push(`<button class="btn btn-success btn-sm" onclick="approve(${b.id})">Approve</button>`);
+    btns.push(`<button class="btn btn-danger btn-sm" onclick="reject(${b.id})">Reject</button>`);
+  }
+  if(role==='registrar'&&b.status==='Pending at Registrar'){
+    btns.push(`<button class="btn btn-success btn-sm" onclick="approve(${b.id})">Final Approve</button>`);
+    btns.push(`<button class="btn btn-danger btn-sm" onclick="reject(${b.id})">Reject</button>`);
+  }
+  return btns.join('');
+}
+
+function approve(id){
+  const b = bookings.find(x=>x.id===id); if(!b) return;
+  const next = {faculty:'Pending at Admin',admin:'Pending at Registrar',registrar:'Approved'};
+  b.sigs.push({role:session.role,name:session.user,ts:new Date().toLocaleString(),note:'Approved'});
+  b.status = next[session.role]||'Approved';
+  notifications.unshift({icon:'✅',text:`"${b.event}" approved`,time:'just now',type:'success',read:false});
+  toast(`"${b.event}" approved!`,'s');
+  if(b.status==='Approved') toast('🎉 Final approval — QR pass generated','s');
+  refreshCurrentPage();
+  buildNav(); renderNotifPanel();
+}
+function reject(id){
+  const b = bookings.find(x=>x.id===id); if(!b) return;
+  b.sigs.push({role:session.role,name:session.user,ts:new Date().toLocaleString(),note:'Rejected'});
+  b.status = 'Rejected';
+  notifications.unshift({icon:'❌',text:`"${b.event}" rejected`,time:'just now',type:'error',read:false});
+  toast(`"${b.event}" rejected`,'e');
+  refreshCurrentPage();
+  buildNav(); renderNotifPanel();
+}
+function refreshCurrentPage(){
+  const active = document.querySelector('.page.active');
+  if(!active) return;
+  const id = active.id.replace('pg-','');
+  if(id==='dashboard') renderDash();
+  if(id==='requests') renderRequests();
+  if(id==='approvals') renderApprovals();
+  if(id==='map') renderMap();
+  if(id==='passes') renderPasses();
+}
+
+// ══════════════════════════════════════
+// VIEW DETAIL MODAL
+// ══════════════════════════════════════
+function viewDetail(id){
+  const b = bookings.find(x=>x.id===id); if(!b) return;
+  const stages = ['Faculty','Admin','Registrar','Approved'];
+  const wfHTML = `<div class="wf-bar">${stages.map((s,i)=>{
+    const done = b.sigs.find(sg=>sg.role.toLowerCase()===s.toLowerCase())||b.status==='Approved';
+    const active = b.status===`Pending at ${s}`;
+    return `<div class="wf-seg ${done?'done':active?'active':'idle'}">
+      <div class="wf-seg-icon">${done?'✅':active?'⏳':'○'}</div>
+      <div>${s}</div>
+    </div>`;
+  }).join('')}</div>`;
+
+  const sigsHTML = b.sigs.length ? `
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Digital Signatures</div>
+      ${b.sigs.map(s=>`<div class="sig-item">
+        <div class="sig-av">${s.name.substring(0,2).toUpperCase()}</div>
+        <div>
+          <div class="sig-name">${s.name}</div>
+          <div class="sig-meta">${s.role.toUpperCase()} · ${s.ts}</div>
+          ${s.note?`<div style="font-size:11px;color:var(--text2);font-style:italic;margin-top:2px">"${s.note}"</div>`:''}
+        </div>
+        <div class="sig-check">✓</div>
+      </div>`).join('')}
+    </div>` : '';
+
+  const qrHTML = b.status==='Approved' ? `
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Event Pass</div>
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        ${genQR(b.id)}
+        <div style="font-size:12px;color:var(--text2);line-height:1.9">
+          <div>Event: <strong>${b.event}</strong></div>
+          <div>Venue: <strong>${b.venue}</strong></div>
+          <div>Date: ${b.sd}</div>
+          <div>Time: ${b.st}–${b.et}</div>
+          <div style="margin-top:7px;padding:5px 10px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:6px;color:#4ade80;font-size:11px">✅ VERIFIED PASS</div>
+        </div>
+      </div>
+    </div>` : '';
+
+  const letterHTML = b.status==='Approved' ? `
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Permission Letter</div>
+      <div class="perm-letter">
+        <h3>VENUE BOOKING PERMISSION</h3>
+        <div class="pl-sub">VenueSync AI — Official Document</div>
+        <p>This certifies that <strong>${b.club}</strong> is permitted to use <strong>${b.venue}</strong> for <strong>"${b.event}"</strong>.</p>
+        <p><strong>Date:</strong> ${b.sd}${b.ed!==b.sd?' to '+b.ed:''} &emsp; <strong>Time:</strong> ${b.st}–${b.et} &emsp; <strong>Attendance:</strong> ${b.students}</p>
+        ${b.equip.length?`<p><strong>Equipment:</strong> ${b.equip.join(', ')}</p>`:''}
+        <div class="pl-sigs"><span>Admin: Akhilesh</span><span>Registrar: Brigadier RK Sharma</span></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="exportPDF(${b.id})">Export PDF</button>
+    </div>` : '';
+
+  openModal(`
+    <div class="modal-title">${b.event}</div>
+    <div class="modal-sub">${b.club} · ${statusBadge(b.status)}</div>
+    ${wfHTML}
+    <div>
+      <div class="info-row"><span class="info-key">Venue</span><span class="info-val"><span class="vtag">${b.venue}</span></span></div>
+      <div class="info-row"><span class="info-key">Date</span><span class="info-val">${b.sd}${b.ed!==b.sd?' → '+b.ed:''}</span></div>
+      <div class="info-row"><span class="info-key">Time</span><span class="info-val">${b.st} – ${b.et}</span></div>
+      <div class="info-row"><span class="info-key">Students</span><span class="info-val">${b.students}</span></div>
+      <div class="info-row"><span class="info-key">Priority</span><span class="info-val">${priTag(b.priority)}</span></div>
+      ${b.desc?`<div class="info-row"><span class="info-key">Description</span><span class="info-val" style="color:var(--text2)">${b.desc}</span></div>`:''}
+      ${b.equip.length?`<div class="info-row"><span class="info-key">Equipment</span><span class="info-val">${b.equip.map(e=>`<span class="ai-tag" style="margin:1px">${e}</span>`).join('')}</span></div>`:''}
+    </div>
+    ${sigsHTML}${qrHTML}${letterHTML}
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      ${actionBtns(b)}
+    </div>`);
+}
+
+// ── PASS BADGE (replaces QR — shown in UI and PDF) ──
+function genQR(bookingId){
+  const b = bookings.find(x=>x.id===bookingId);
+  const passId = String(bookingId).slice(-6).toUpperCase();
+  const event  = b ? b.event : '—';
+  const venue  = b ? b.venue : '—';
+  const date   = b ? b.sd   : '—';
+  return `<div style="background:#fff;border:2px solid #000;border-radius:8px;padding:10px 12px;width:110px;text-align:center;font-family:monospace">
+    <div style="font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">VENUESYNC</div>
+    <div style="font-size:18px;font-weight:900;color:#000;letter-spacing:2px;border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:4px 0;margin-bottom:4px">${passId}</div>
+    <div style="font-size:8px;color:#333;line-height:1.6;word-break:break-word">${venue}<br>${date}</div>
+    <div style="font-size:7px;color:#16a34a;font-weight:700;margin-top:4px;letter-spacing:.5px">✓ APPROVED</div>
+  </div>`;
+}
+
+// ── EXPORT PDF ──
+function exportPDF(bookingId){
+  const b = bookings.find(x=>x.id===bookingId);
+  if(!b){ toast('Booking not found','e'); return; }
+
+  const passId = String(bookingId).slice(-6).toUpperCase();
+  const qrDataUrl = ''; // removed — was not scanning reliably
+
+  const sigsBlock = b.sigs.map(s=>`
+    <tr>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;font-weight:600">${s.role.toUpperCase()}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb">${s.name}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb">${s.ts}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#16a34a">${s.note||'Approved'}</td>
+    </tr>`).join('');
+
+  const equipBlock = b.equip.length
+    ? b.equip.map(e=>`<span style="display:inline-block;padding:2px 8px;margin:2px;background:#eff6ff;color:#1d4ed8;border-radius:4px;font-size:12px">${e}</span>`).join('')
+    : '<span style="color:#9ca3af">None specified</span>';
+
+  const printHTML = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Permission Letter — ${b.event}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Georgia', serif; color: #111; background: #fff; padding: 40px; font-size: 14px; line-height: 1.6; }
+  .header { text-align: center; border-bottom: 3px double #1d3557; padding-bottom: 20px; margin-bottom: 28px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #1d3557; letter-spacing: 1px; margin-bottom: 4px; }
+  .header .sub { font-size: 13px; color: #6b7280; }
+  .header .badge { display:inline-block; margin-top:10px; padding:4px 14px; background:#dcfce7; color:#15803d; border-radius:20px; font-size:12px; font-weight:600; border:1px solid #86efac; }
+  .section { margin-bottom: 24px; }
+  .section-title { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .info-item .key { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing:.5px; }
+  .info-item .val { font-size: 14px; font-weight: 600; color: #111; margin-top: 1px; }
+  .body-text { font-size: 14px; color: #374151; line-height: 1.8; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f3f4f6; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing:.5px; color: #6b7280; border-bottom: 2px solid #e5e7eb; }
+  .qr-section { display: flex; align-items: flex-start; gap: 24px; padding: 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; }
+  .qr-info { font-size: 12px; color: #374151; line-height: 2; }
+  .qr-info .pass-id { font-size: 16px; font-weight: 700; color: #1d4ed8; letter-spacing: 1px; }
+  .sig-footer { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align: center; }
+  .sig-box { border-top: 1px solid #374151; padding-top: 8px; font-size: 12px; color: #374151; }
+  .sig-box .name { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+  .watermark { position: fixed; bottom: 30px; right: 30px; font-size: 11px; color: #d1d5db; transform: rotate(-45deg); font-family: sans-serif; }
+  @media print { body { padding: 24px; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;font-family:sans-serif">VENUESYNC AI — SMART CAMPUS VENUE MANAGEMENT</div>
+  <h1>OFFICIAL VENUE BOOKING PERMISSION</h1>
+  <div class="sub">Issued upon completion of institutional approval workflow</div>
+  <div class="badge">&#10003; FULLY APPROVED — VALID PERMISSION</div>
+</div>
+<div class="section">
+  <div class="section-title">Event Details</div>
+  <div class="info-grid">
+    <div class="info-item"><div class="key">Event Name</div><div class="val">${b.event}</div></div>
+    <div class="info-item"><div class="key">Club / Committee</div><div class="val">${b.club}</div></div>
+    <div class="info-item"><div class="key">Venue</div><div class="val">${b.venue}</div></div>
+    <div class="info-item"><div class="key">Expected Attendance</div><div class="val">${b.students} students</div></div>
+    <div class="info-item"><div class="key">Date</div><div class="val">${b.sd}${b.ed!==b.sd?' to '+b.ed:''}</div></div>
+    <div class="info-item"><div class="key">Time</div><div class="val">${b.st} – ${b.et}</div></div>
+    <div class="info-item"><div class="key">Priority</div><div class="val">${b.priority}</div></div>
+    <div class="info-item"><div class="key">Request ID</div><div class="val">#${b.id}</div></div>
+  </div>
+  ${b.desc?`<div style="margin-top:12px"><div class="key" style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Description</div><div class="body-text">${b.desc}</div></div>`:''}
+</div>
+${b.equip.length?`<div class="section"><div class="section-title">Equipment Authorized</div><div>${equipBlock}</div></div>`:''}
+${b.sigs.length?`<div class="section"><div class="section-title">Approval Trail</div><table><thead><tr><th>Stage</th><th>Approved By</th><th>Timestamp</th><th>Remarks</th></tr></thead><tbody>${sigsBlock}</tbody></table></div>`:''}
+<div class="section">
+  <div class="section-title">Event Pass</div>
+  <div class="qr-section">
+    <div style="border:2px solid #000;border-radius:8px;padding:12px 16px;text-align:center;min-width:120px;font-family:monospace">
+      <div style="font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">VENUESYNC</div>
+      <div style="font-size:22px;font-weight:900;color:#000;letter-spacing:3px;border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:5px 0;margin-bottom:5px">${passId}</div>
+      <div style="font-size:9px;color:#333;line-height:1.6">${b.venue}<br>${b.sd}</div>
+      <div style="font-size:8px;color:#16a34a;font-weight:700;margin-top:5px;letter-spacing:.5px">&#10003; APPROVED PASS</div>
+    </div>
+    <div class="qr-info">
+      <div class="pass-id">PASS #${passId}</div>
+      <div><strong>Event:</strong> ${b.event}</div>
+      <div><strong>Venue:</strong> ${b.venue}</div>
+      <div><strong>Date:</strong> ${b.sd}</div>
+      <div><strong>Time:</strong> ${b.st}&#8211;${b.et}</div>
+      <div><strong>Club:</strong> ${b.club}</div>
+      <div style="margin-top:8px;font-size:11px;color:#16a34a;font-weight:600">&#10003; Present this pass at venue entry</div>
+    </div>
+  </div>
+</div>
+<div class="sig-footer">
+  <div class="sig-box"><div class="name">Akhilesh</div><div>Campus Administrator</div></div>
+  <div class="sig-box"><div class="name">${b.sigs.find(s=>s.role==='Faculty')?.name||'Faculty Coordinator'}</div><div>Faculty Coordinator</div></div>
+  <div class="sig-box"><div class="name">Brigadier RK Sharma</div><div>Registrar</div></div>
+</div>
+<div class="watermark">VenueSync AI — Official Document</div>
+<script>window.onload=function(){window.print();}<\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if(!win){ toast('Allow pop-ups to export PDF','e'); return; }
+  win.document.write(printHTML);
+  win.document.close();
+}
+
+// ══════════════════════════════════════
+// BOOKING FORM
+// ══════════════════════════════════════
+function aiSuggest(){
+  const n = parseInt(document.getElementById('b-students').value)||0;
+  const box = document.getElementById('b-aibox');
+  if(!n){box.innerHTML='';return;}
+  let venue='',reason='';
+  if(n<=100){
+    const taken=['CR3','CR7'];
+    const free=['CR1','CR2','CR4','CR5','CR6','CR8','CR9','CR10'].find(c=>!taken.includes(c));
+    venue=free||'CR1'; reason=`${n} students fit in a Classroom.`;
+  } else if(n<=120){ venue='LT2'; reason=`${n} students fit in a Lecture Theatre.`; }
+  else { venue='Auditorium'; reason=`${n}+ students need the Auditorium (4000 capacity).`; }
+  document.getElementById('b-venue').value=venue;
+  box.innerHTML=`<div class="ai-box"><div class="ai-box-hd">🤖 AI Suggestion</div>
+    <div class="ai-line">Venue: <span class="vtag">${venue}</span></div>
+    <div class="ai-line" style="font-size:12px;color:var(--text3)">${reason} Capacity utilization: ${Math.round(n/(venue.startsWith('CR')?100:venue.startsWith('LT')?120:4000)*100)}%</div>
+  </div>`;
+  checkConflict();
+}
+function checkConflict(){
+  const venue=document.getElementById('b-venue').value;
+  const sd=document.getElementById('b-sd').value;
+  const ed=document.getElementById('b-ed').value;
+  const st=document.getElementById('b-st').value;
+  const et=document.getElementById('b-et').value;
+  const el=document.getElementById('b-conflict');
+  if(!venue||!sd){el.innerHTML='';return;}
+  const clashes=bookings.filter(b=>b.venue===venue&&b.status!=='Rejected'&&!(ed<b.sd||sd>b.ed)&&!(et<=b.st||st>=b.et));
+  if(clashes.length){
+    const n=parseInt(document.getElementById('b-students').value)||0;
+    const alts=VENUES.filter(v=>v.id!==venue&&v.cap>=n).slice(0,3);
+    el.innerHTML=`<div class="conflict-box">⚠️ <strong>Conflict:</strong> ${venue} is already booked for "${clashes[0].event}" (${clashes[0].st}–${clashes[0].et}).
+      ${alts.length?`<br>Alternatives: ${alts.map(a=>`<span class="ai-tag" style="cursor:pointer;margin:1px" onclick="document.getElementById('b-venue').value='${a.id}';checkConflict()">${a.id}</span>`).join('')}`:''}
+    </div>`;
+  } else if(venue){
+    el.innerHTML=`<div class="ok-box">✅ ${venue} is available for the selected time slot.</div>`;
+  }
+}
+function setPri(p){
+  selPriority=p;
+  document.querySelectorAll('.rpill').forEach(el=>{
+    el.className='rpill';
+    if(el.textContent.replace(' ✓','')===p){ el.textContent=p+' ✓'; el.classList.add('sel-'+p.toLowerCase()); }
+    else el.textContent=el.textContent.replace(' ✓','');
+  });
+}
+function submitBooking(){
+  const ev=document.getElementById('b-event').value.trim();
+  const stu=document.getElementById('b-students').value;
+  const venue=document.getElementById('b-venue').value;
+  const sd=document.getElementById('b-sd').value;
+  if(!ev||!stu||!venue||!sd){toast('Fill all required fields','e');return;}
+  const equip=[];
+  ['proj','sound','rec','mic','cam'].forEach(k=>{if(document.getElementById('eq-'+k).checked)equip.push({proj:'Projector',sound:'Sound System',rec:'Recording Setup',mic:'Microphone',cam:'Camera'}[k]);});
+  const nb={id:Date.now(),club:session.user,event:ev,by:session.user,venue,sd,ed:document.getElementById('b-ed').value||sd,st:document.getElementById('b-st').value,et:document.getElementById('b-et').value,students:parseInt(stu),desc:document.getElementById('b-desc').value,priority:selPriority,status:'Pending at Faculty',equip,sigs:[]};
+  bookings.unshift(nb);
+  notifications.unshift({icon:'📋',text:`New request: "${ev}"`,time:'just now',type:'info',read:false});
+  toast('Request submitted! Pending Faculty Coordinator review.','s');
+  clearBookForm(); nav('requests');
+}
+function clearBookForm(){
+  ['b-event','b-students','b-desc'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('b-venue').value='';
+  document.getElementById('b-aibox').innerHTML='';
+  document.getElementById('b-conflict').innerHTML='';
+  document.querySelectorAll('#pg-book input[type=checkbox]').forEach(c=>c.checked=false);
+}
+
+// ══════════════════════════════════════
+// MY PASSES
+// ══════════════════════════════════════
+function renderPasses(){
+  const approved = visibleBookings().filter(b=>b.status==='Approved');
+  const el = document.getElementById('passes-content');
+  if(!approved.length){
+    el.innerHTML=`<div class="card"><div class="empty" style="padding:48px 0">
+      <div style="font-size:32px;margin-bottom:12px">🎫</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:6px">No approved passes yet</div>
+      <div style="font-size:12px;color:var(--text3)">Your QR event passes will appear here once a request is fully approved by the Registrar.</div>
+    </div></div>`;
+    return;
+  }
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+    ${approved.map(b=>`
+    <div class="card" style="border-color:rgba(34,197,94,.2);position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#22c55e,#4ade80)"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="flex:1">
+          <div style="font-family:var(--fh);font-size:15px;font-weight:700;margin-bottom:4px">${b.event}</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px">${b.club}</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.9">
+            <div>📍 <strong style="color:var(--text)">${b.venue}</strong></div>
+            <div>📅 ${b.sd}${b.ed!==b.sd?' → '+b.ed:''}</div>
+            <div>⏰ ${b.st} – ${b.et}</div>
+            <div>👥 ${b.students} students</div>
+            ${b.equip.length?`<div>🔌 ${b.equip.join(', ')}</div>`:''}
+          </div>
+          <div style="margin-top:10px;display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:6px;font-size:11px;color:#4ade80;font-weight:600">
+            ✅ FULLY APPROVED — VALID PASS
+          </div>
+        </div>
+        <div style="flex-shrink:0;text-align:center">
+          ${genQR(b.id)}
+          <div style="font-size:10px;color:var(--text3);margin-top:5px">Pass #${String(b.id).slice(-6).toUpperCase()}</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="viewDetail(${b.id})">View Details</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportPDF(${b.id})">Export PDF</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ══════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════
+function renderCalendar(){
+  const cols=['ce-blue','ce-green','ce-purple','ce-yellow'];
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html=`<div class="cal-grid">${days.map(d=>`<div class="cal-hd">${d}</div>`).join('')}`;
+  for(let i=0;i<6;i++) html+=`<div class="cal-day"></div>`; // March 1 = Saturday = index 6
+  for(let date=1;date<=31;date++){
+    const evts=bookings.filter(b=>{
+      const s=parseInt(b.sd.split('-')[2]),e=parseInt(b.ed.split('-')[2]);
+      return date>=s&&date<=e&&b.status!=='Rejected'&&b.sd.includes('2025-03');
+    });
+    html+=`<div class="cal-day${date===14?' today':''}">
+      <div class="cal-day-num">${date}</div>
+      ${evts.slice(0,2).map((b,i)=>`<div class="cal-ev ${cols[i%4]}" onclick="viewDetail(${b.id})" title="${b.event}">${b.venue}: ${b.event}</div>`).join('')}
+      ${evts.length>2?`<div style="font-size:9px;color:var(--text3)">+${evts.length-2}</div>`:''}
+    </div>`;
+  }
+  html+='</div>';
+  document.getElementById('cal-view').innerHTML=html;
+}
+
+// ══════════════════════════════════════
+// VENUE MAP
+// ══════════════════════════════════════
+function renderMap(){
+  const dotMap={avail:'dg',occ:'dr',res:'dy'};
+  const stMap={avail:'sg Available',occ:'sr Occupied',res:'sy Reserved'};
+  document.getElementById('vmap-grid').innerHTML=VENUES.map(v=>{
+    const st=getVenueStatus(v.id);
+    const [sc,sl]=stMap[st].split(' ');
+    return `<div class="vtile ${st}" onclick="showVenueDetail('${v.id}')">
+      <div class="vt-dot ${dotMap[st]}"></div>
+      <div class="vt-name">${v.id}</div>
+      <div class="vt-cap">${v.cap.toLocaleString()}</div>
+      <div class="vt-st ${sc}">${sl}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('vmap-detail').style.display='none';
+}
+function showVenueDetail(vid){
+  const vb=bookings.filter(b=>b.venue===vid&&b.status!=='Rejected');
+  const v=VENUES.find(x=>x.id===vid);
+  const st=getVenueStatus(vid);
+  const stLabel={avail:'Available',occ:'Occupied',res:'Reserved'}[st];
+  const stBadge={avail:'badge-approved',occ:'badge-rejected',res:'badge-pending'}[st];
+  const dp=document.getElementById('vmap-detail');
+  dp.style.display='block';
+  dp.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div><strong style="font-family:var(--fh)">${vid}</strong> <span style="font-size:12px;color:var(--text3)">${v.type} · ${v.cap} seats</span></div>
+    <span class="badge ${stBadge}">${stLabel}</span>
+  </div>
+  ${vb.length
+    ? `<div class="table-wrap"><table>
+        <thead><tr><th>Event</th><th>Club</th><th>Date</th><th>Time</th><th>Students</th><th>Status</th></tr></thead>
+        <tbody>${vb.map(b=>`<tr>
+          <td style="font-weight:500;cursor:pointer;color:var(--accent2)" onclick="viewDetail(${b.id})">${b.event}</td>
+          <td style="font-size:12px;color:var(--text2)">${b.club}</td>
+          <td style="font-size:12px">${b.sd}${b.ed!==b.sd?' → '+b.ed:''}</td>
+          <td style="font-size:12px">${b.st}–${b.et}</td>
+          <td style="font-size:12px">${b.students}</td>
+          <td>${statusBadge(b.status)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`
+    : '<div style="color:var(--text3);font-size:13px;padding:8px 0">No upcoming bookings for this venue.</div>'
+  }`;
+  dp.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ══════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════
+function renderAnalytics(){
+  const data=[['LT2',48,'#4f6ef7'],['Auditorium',32,'#a855f7'],['CR1',28,'#06b6d4'],['LT3',24,'#22c55e'],['CR2',20,'#f59e0b'],['CR3',18,'#ef4444'],['CR4',15,'#ec4899'],['CR5',12,'#14b8a6']];
+  const max=48;
+  document.getElementById('analytics-bars').innerHTML=data.map(([v,c,col])=>
+    `<div class="abar-row"><div class="abar-lbl">${v}</div><div class="abar-track"><div class="abar-fill" style="width:${Math.round(c/max*100)}%;background:${col}"></div></div><div class="abar-num">${c}</div></div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════
+// AI ASSISTANT
+// ══════════════════════════════════════
+// Pick venue by capacity: 1-100 → CR, 101-120 → LT, 121+ → Auditorium
+function suggestVenueByCount(n){
+  if(n<=100) return 'CR1';
+  if(n<=120) return 'LT2';
+  return 'Auditorium';
+}
+
+const AI_RESPONSES=[
+  {t:['robotics','workshop'],n:90,v:'LT2',time:'10:00–13:00',eq:['Projector','Sound System'],dur:'3 hours',note:'LT2 ideal for technical demos with AV setup.'},
+  {t:['seminar','talk','lecture'],n:60,v:'CR2',time:'14:00–16:00',eq:['Projector','Microphone'],dur:'2 hours',note:'Classroom suits academic talks for small groups.'},
+  {t:['film','movie','screening'],n:300,v:'Auditorium',time:'18:00–21:00',eq:['Sound System','Recording Setup'],dur:'3 hours',note:'Auditorium provides best audio-visual experience.'},
+  {t:['fest','festival'],n:500,v:'Auditorium',time:'09:00–18:00',eq:['Projector','Sound System','Recording Setup','Camera'],dur:'Full day',note:'Large-scale events need full equipment support.'},
+  {t:['coding','python','hackathon'],n:60,v:'CR2',time:'09:00–17:00',eq:['Projector'],dur:'Full day',note:'Classroom with power points for laptops.'},
+  {t:['photo','photography'],n:40,v:'CR4',time:'10:00–12:00',eq:['Projector'],dur:'2 hours',note:'Classroom suitable for briefings.'}
+];
+function sendAI(){
+  const inp=document.getElementById('ai-inp');
+  const msg=inp.value.trim(); if(!msg) return;
+  const msgs=document.getElementById('ai-msgs');
+  msgs.innerHTML+=`<div class="ai-msg user">${msg}</div>`;
+  inp.value='';
+  const lower=msg.toLowerCase();
+  // Extract number from message if present
+  const nm=msg.match(/(\d+)/); const userN=nm?parseInt(nm[1]):0;
+  let res=AI_RESPONSES.find(r=>r.t.some(t=>lower.includes(t)));
+  // Override venue based on actual student count if number was given
+  const finalN = userN>0 ? userN : (res ? res.n : 50);
+  const correctVenue = suggestVenueByCount(finalN);
+  const capLabel = finalN<=100?'Classroom (100 seats)':finalN<=120?'Lecture Theatre (120 seats)':'Auditorium (4000 seats)';
+  if(res){
+    res = Object.assign({}, res, {v: correctVenue});
+  } else {
+    res={v:correctVenue,time:'10:00–12:00',eq:['Projector'],dur:'2 hours',note:'Based on your description.'};
+  }
+  setTimeout(()=>{
+    msgs.innerHTML+=`<div class="ai-msg bot">
+      📍 Venue: <span class="ai-tag">${res.v}</span> <span style="font-size:11px;color:var(--text3)">${capLabel}</span><br>
+      👥 Students: <span class="ai-tag">${finalN}</span><br>
+      ⏰ Time: ${res.time}<br>
+      🔌 Equipment: ${res.eq.map(e=>`<span class="ai-tag">${e}</span>`).join(' ')}<br>
+      ⏱ Duration: ${res.dur}<br>
+      <span style="font-size:11px;color:var(--text3);display:block;margin-top:5px">💡 ${res.note}</span>
+      ${session.role==='club'?`<div style="margin-top:8px"><button class="btn btn-primary btn-sm" onclick="nav('book')">Fill booking form →</button></div>`:''}
+    </div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+  },600);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function renderInsights(){
+  const el=document.getElementById('ai-insights'); if(!el) return;
+  const items=[
+    {i:'📊',t:'LT2 at 85% utilization — consider morning slots for this week'},
+    {i:'⏰',t:'Peak hours 2–5 PM — morning bookings get approved faster'},
+    {i:'⚠️',t:'CR8 & CR9 are underutilized — ideal for small groups'},
+    {i:'🗓',t:'March 20–22 Auditorium blocked for Tech Fest'},
+    {i:'💡',t:'Requests submitted before 10 AM approved 2× faster on average'}
+  ];
+  el.innerHTML=items.map(x=>`<div style="display:flex;gap:9px;padding:9px;border-radius:var(--r2);border:1px solid var(--border);background:var(--bg4);margin-bottom:8px">
+    <span style="font-size:15px">${x.i}</span>
+    <span style="font-size:13px;color:var(--text2);line-height:1.5">${x.t}</span>
+  </div>`).join('');
+}
+
+// ══════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════
+function renderNotifPanel(){
+  const unread=notifications.filter(n=>!n.read).length;
+  const dot=document.getElementById('notif-dot');
+  dot.style.display=unread>0?'block':'none';
+  const iconBg={info:'rgba(79,110,247,.14)',success:'rgba(34,197,94,.14)',error:'rgba(239,68,68,.14)'};
+  document.getElementById('notif-list').innerHTML=notifications.slice(0,5).map(n=>`
+    <div class="np-item">
+      <div class="np-icon" style="background:${iconBg[n.type]||iconBg.info}">${n.icon}</div>
+      <div style="flex:1"><div class="np-text">${n.text}</div><div class="np-time">${n.time}</div></div>
+      ${!n.read?'<div class="np-unread"></div>':''}
+    </div>`).join('');
+}
+function toggleNotif(){
+  notifOpen=!notifOpen;
+  document.getElementById('notif-panel').classList.toggle('open',notifOpen);
+}
+function markRead(){
+  notifications.forEach(n=>n.read=true);
+  renderNotifPanel();
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#notif-panel')&&!e.target.closest('#notif-btn')){
+    notifOpen=false; document.getElementById('notif-panel').classList.remove('open');
+  }
+});
+
+// ══════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════
+function openModal(html){
+  document.getElementById('modal-box').innerHTML=html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+function toast(msg,type='i'){
+  const map={s:'ts',e:'te',i:'ti'};
+  const wrap=document.getElementById('toasts');
+  const el=document.createElement('div');
+  el.className=`toast ${map[type]||'ti'}`;
+  el.textContent=msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(14px)';el.style.transition='all .25s';setTimeout(()=>el.remove(),250);},3000);
+}
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function statusBadge(s){
+  const map={'Pending at Admin':'badge-pending','Pending at Faculty':'badge-faculty','Pending at Registrar':'badge-registrar','Approved':'badge-approved','Rejected':'badge-rejected','Occupied':'badge-rejected','Reserved':'badge-pending'};
+  return `<span class="badge ${map[s]||'badge-pending'}">${s}</span>`;
+}
+function priTag(p){
+  const map={High:'ptag-high',Normal:'ptag-normal',Low:'ptag-low'};
+  return `<span class="${map[p]||'ptag-normal'}">${p}</span>`;
+}
+</script>
+</body>
+</html>
